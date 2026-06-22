@@ -15,13 +15,13 @@ Public release repo for AbabilX desktop installers.
 
 ## How releases are published
 
-Installers are built in the **private** source repo and uploaded here automatically when a `v*` tag is pushed.
+Installers are built in the private source repo [AbabilX/ababilxdesktopcode](https://github.com/AbabilX/ababilxdesktopcode) and uploaded here automatically when a `v*` tag is pushed.
 
 You can also upload builds manually to [AbabilX/ababilxdesktop](https://github.com/AbabilX/ababilxdesktop) if you prefer.
 
 ## Install guides
 
-Full install steps, OS security bypass (SmartScreen / Gatekeeper), and build-from-source docs are in the private repo README (developer copy).
+Full install steps, OS security bypass (SmartScreen / Gatekeeper), and build-from-source docs are in the [ababilxdesktopcode](https://github.com/AbabilX/ababilxdesktopcode) README.
 
 ### Windows SmartScreen
 
