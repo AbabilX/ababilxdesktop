@@ -14,13 +14,13 @@ Install or update AbabilX directly from your terminal with a single command:
 
 ### 🍎 macOS & 🐧 Linux
 ```bash
-curl -fsSL https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/AbabilX/ababilxdesktopfile/main/install.sh | bash
 ```
 *Auto-detects macOS (Apple Silicon M1/M2/M3/M4 or Intel) and Linux (x86_64 / arm64), installs the app, removes Gatekeeper quarantine flags, and registers system URL deep links.*
 
 ### 🪟 Windows (PowerShell)
 ```powershell
-irm https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/AbabilX/ababilxdesktopfile/main/install.ps1 | iex
 ```
 *Downloads the installer and runs the setup wizard automatically.*
 

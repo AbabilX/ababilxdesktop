@@ -11,10 +11,16 @@ Write-Host "`n╔═════════════════════
 Write-Host "║             🚀  AbabilX Desktop Installer             ║" -ForegroundColor Cyan
 Write-Host "╚═══════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
 
-$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path 2>$null
+$scriptDir = $null
+if ($PSScriptRoot) {
+    $scriptDir = $PSScriptRoot
+} elseif ($MyInvocation.MyCommand -and $MyInvocation.MyCommand.Path) {
+    $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+}
+
 $localInstaller = $null
 
-if ($scriptDir) {
+if ($scriptDir -and (Test-Path -Path (Join-Path $scriptDir "desktopapp"))) {
     $exeCandidate = Get-ChildItem -Path (Join-Path $scriptDir "desktopapp") -Recurse -Filter "*setup.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
     $msiCandidate = Get-ChildItem -Path (Join-Path $scriptDir "desktopapp") -Recurse -Filter "*.msi" -ErrorAction SilentlyContinue | Select-Object -First 1
     if ($exeCandidate) {
@@ -24,7 +30,7 @@ if ($scriptDir) {
     }
 }
 
-if ($localInstaller) {
+if ($localInstaller -and (Test-Path -Path $localInstaller)) {
     Write-Host "✔ Found local installer: $localInstaller" -ForegroundColor Green
     $installerPath = $localInstaller
 } else {
@@ -32,7 +38,26 @@ if ($localInstaller) {
     $tempFile = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), "AbabilX_0.1.0_x64-setup.exe")
     $downloadUrl = "https://github.com/AbabilX/ababilxdesktopfile/releases/latest/download/AbabilX_0.1.0_x64-setup.exe"
     
-    Invoke-WebRequest -Uri $downloadUrl -OutFile $tempFile -UseBasicParsing
+    $downloaded = $false
+    if (Get-Command curl.exe -ErrorAction SilentlyContinue) {
+        & curl.exe -fSL "$downloadUrl" -o "$tempFile" --progress-bar 2>$null
+        if ($LASTEXITCODE -eq 0 -and (Test-Path $tempFile) -and ((Get-Item $tempFile).Length -gt 100000)) {
+            $downloaded = $true
+        }
+    }
+    
+    if (-not $downloaded) {
+        try {
+            Invoke-WebRequest -Uri $downloadUrl -OutFile $tempFile -UseBasicParsing
+            if ((Test-Path $tempFile) -and ((Get-Item $tempFile).Length -gt 100000)) {
+                $downloaded = $true
+            }
+        } catch {
+            Write-Host "`n✘ Download failed. The release may not be published yet on GitHub." -ForegroundColor Red
+            Write-Host "URL: $downloadUrl`n" -ForegroundColor Yellow
+            return
+        }
+    }
     $installerPath = $tempFile
 }
 
