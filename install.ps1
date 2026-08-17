@@ -11,6 +11,9 @@ Write-Host "`n╔═════════════════════
 Write-Host "║             🚀  AbabilX Desktop Installer             ║" -ForegroundColor Cyan
 Write-Host "╚═══════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
 
+# Stop any previous hanging installer instances to release file locks
+Get-Process | Where-Object { $_.ProcessName -like "*AbabilX*setup*" } | Stop-Process -Force -ErrorAction SilentlyContinue
+
 $scriptDir = $null
 if ($PSScriptRoot) {
     $scriptDir = $PSScriptRoot
@@ -35,7 +38,8 @@ if ($localInstaller -and (Test-Path -Path $localInstaller)) {
     $installerPath = $localInstaller
 } else {
     Write-Host "⬇ Downloading latest AbabilX setup for Windows..." -ForegroundColor Yellow
-    $tempFile = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), "AbabilX_0.1.0_x64-setup.exe")
+    $uniqueId = [System.Guid]::NewGuid().ToString('N').Substring(0, 8)
+    $tempFile = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), "AbabilX_setup_$uniqueId.exe")
     
     $downloadUrls = @(
         "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX_0.1.0_x64-setup.exe",
