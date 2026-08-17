@@ -50,7 +50,7 @@ if ($localInstaller -and (Test-Path -Path $localInstaller)) {
     $downloaded = $false
     foreach ($url in $downloadUrls) {
         if (Get-Command curl.exe -ErrorAction SilentlyContinue) {
-            & curl.exe -fSL "$url" -o "$tempFile" --progress-bar 2>$null
+            & curl.exe -fSL "$url" -o "$tempFile" --progress-bar
             if ($LASTEXITCODE -eq 0 -and (Test-Path $tempFile) -and ((Get-Item $tempFile).Length -gt 100000)) {
                 $downloaded = $true
                 break

@@ -21,24 +21,33 @@ echo -e "${BOLD}${BLUE}╚══════════════════
 
 OS_NAME="$(uname -s)"
 ARCH="$(uname -m)"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd || echo "")"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd || echo "")"
 
 cleanup() {
-  [ -n "${MOUNT_DIR:-}" ] && [ -d "$MOUNT_DIR" ] && hdiutil detach "$MOUNT_DIR" -quiet 2>/dev/null || true
-  [ -n "${MOUNT_DIR:-}" ] && rm -rf "$MOUNT_DIR" 2>/dev/null || true
-  [ -n "${TEMP_FILE:-}" ] && rm -f "$TEMP_FILE" 2>/dev/null || true
+  [ -n "${MOUNT_DIR:-}" ] && [ -d "$MOUNT_DIR" ] && hdiutil detach "$MOUNT_DIR" || true
+  [ -n "${MOUNT_DIR:-}" ] && rm -rf "$MOUNT_DIR" || true
+  # Only clean temp file on non-Windows to avoid removing active installer binary
+  case "$OS_NAME" in
+    Darwin*|Linux*)
+      if ! grep -qi microsoft /proc/version; then
+        [ -n "${TEMP_FILE:-}" ] && rm -f "$TEMP_FILE" || true
+      fi
+      ;;
+  esac
 }
 trap cleanup EXIT INT TERM
 
 download_pkg() {
   local url="$1" dest="$2"
   if command -v curl >/dev/null 2>&1; then
-    curl -fSL "$url" -o "$dest" --progress-bar
+    curl -fSL "$url" -o "$dest" --progress-bar || return 1
   elif command -v wget >/dev/null 2>&1; then
-    wget -q --show-progress "$url" -O "$dest"
+    wget --show-progress "$url" -O "$dest" || return 1
   else
-    echo -e "${RED}✘ curl or wget required.${NC}"; exit 1
+    echo -e "${RED}✘ curl or wget required.${NC}"
+    return 1
   fi
+  [ -s "$dest" ] || return 1
 }
 
 install_macos() {
@@ -47,16 +56,20 @@ install_macos() {
   [ "$ARCH" = "x86_64" ] && suffix="x64"
 
   local local_dmg=""
-  [ -n "$SCRIPT_DIR" ] && local_dmg="$(find "$SCRIPT_DIR/desktopapp" -name "*${suffix}*.dmg" -o -name "AbabilX*.dmg" 2>/dev/null | head -n 1 || true)"
+  [ -n "$SCRIPT_DIR" ] && local_dmg="$(find "$SCRIPT_DIR/desktopapp" -name "*${suffix}*.dmg" -o -name "AbabilX*.dmg" | head -n 1 || true)"
 
   local dmg_path="$local_dmg"
   if [ -z "$dmg_path" ] || [ ! -f "$dmg_path" ]; then
     echo -e "${YELLOW}⬇  Downloading AbabilX for macOS ($ARCH)...${NC}"
     TEMP_FILE="$(mktemp /tmp/AbabilX_XXXXXX.dmg)"
     download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX_0.1.0_${suffix}.dmg" "$TEMP_FILE" || \
+      download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX_0.1.0_aarch64.dmg" "$TEMP_FILE" || \
       download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_0.1.0_${suffix}.dmg" "$TEMP_FILE" || \
+      download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_0.1.0_aarch64.dmg" "$TEMP_FILE" || \
       download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_0.1.0_${suffix}.dmg" "$TEMP_FILE" || \
-      download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_0.1.0_aarch64.dmg" "$TEMP_FILE"
+      download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_0.1.0_aarch64.dmg" "$TEMP_FILE" || {
+        echo -e "${RED}✘ Download failed. Please check your internet connection.${NC}"; exit 1;
+      }
     dmg_path="$TEMP_FILE"
   else
     echo -e "${GREEN}✔  Using local installer:${NC} $dmg_path"
@@ -64,22 +77,22 @@ install_macos() {
 
   echo -e "${BLUE}📦 Mounting disk image...${NC}"
   MOUNT_DIR="$(mktemp -d /tmp/ababilx_mount_XXXXXX)"
-  hdiutil attach "$dmg_path" -nobrowse -mountpoint "$MOUNT_DIR" -quiet
+  hdiutil attach "$dmg_path" -nobrowse -mountpoint "$MOUNT_DIR"
 
   local app_src="$(find "$MOUNT_DIR" -maxdepth 2 -name "AbabilX.app" -o -name "ababilxdesktop.app" | head -n 1 || true)"
   [ -z "$app_src" ] && { echo -e "${RED}✘ App not found in DMG.${NC}"; exit 1; }
 
   echo -e "${YELLOW}⏳ Stopping running instances...${NC}"
-  pkill -f "AbabilX" 2>/dev/null || true
+  pkill -f "AbabilX" || true
   sleep 0.5
 
   local target="/Applications/AbabilX.app"
   echo -e "${BLUE}📂 Copying to /Applications...${NC}"
   rm -rf "$target" && cp -R "$app_src" "$target"
-  xattr -cr "$target" 2>/dev/null || true
+  xattr -cr "$target" || true
 
   if [ -f "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister" ]; then
-    /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "$target" 2>/dev/null || true
+    /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "$target" || true
   fi
 
   echo -e "\n${BOLD}${GREEN}✔  AbabilX installed to /Applications/AbabilX.app!${NC}\n"
@@ -98,7 +111,7 @@ install_linux() {
   local target_bin="$bin_dir/ababilx"
 
   local local_app=""
-  [ -n "$SCRIPT_DIR" ] && local_app="$(find "$SCRIPT_DIR/desktopapp" -name "AbabilX*.AppImage" -o -name "*.AppImage" 2>/dev/null | head -n 1 || true)"
+  [ -n "$SCRIPT_DIR" ] && local_app="$(find "$SCRIPT_DIR/desktopapp" -name "AbabilX*.AppImage" -o -name "*.AppImage" | head -n 1 || true)"
 
   if [ -n "$local_app" ] && [ -f "$local_app" ]; then
     echo -e "${GREEN}✔  Using local installer:${NC} $local_app"
@@ -106,7 +119,9 @@ install_linux() {
   else
     echo -e "${YELLOW}⬇  Downloading AbabilX AppImage...${NC}"
     download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_amd64.AppImage" "$target_bin" || \
-      download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_amd64.AppImage" "$target_bin"
+      download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_amd64.AppImage" "$target_bin" || {
+        echo -e "${RED}✘ Download failed. Please check your internet connection.${NC}"; exit 1;
+      }
   fi
 
   chmod +x "$target_bin"
@@ -118,15 +133,18 @@ install_linux() {
 install_windows() {
   echo -e "${BLUE}ℹ  Target Platform:${NC} Windows ($ARCH)"
   local local_setup=""
-  [ -n "$SCRIPT_DIR" ] && local_setup="$(find "$SCRIPT_DIR/desktopapp" -name "AbabilX*setup.exe" -o -name "AbabilX*.msi" 2>/dev/null | head -n 1 || true)"
+  [ -n "$SCRIPT_DIR" ] && local_setup="$(find "$SCRIPT_DIR/desktopapp" -name "AbabilX*setup.exe" -o -name "AbabilX*.msi" | head -n 1 || true)"
 
   local installer="$local_setup"
   if [ -z "$installer" ] || [ ! -f "$installer" ]; then
     echo -e "${YELLOW}⬇  Downloading Windows setup...${NC}"
-    TEMP_FILE="$(mktemp /tmp/AbabilX_setup_XXXXXX.exe)"
+    local rand_id="$(head -c 8 /dev/urandom | xxd -p || echo $$)"
+    TEMP_FILE="$(mktemp /tmp/AbabilX_setup_${rand_id}_XXXXXX.exe || echo "/tmp/AbabilX_setup_${rand_id}.exe")"
     download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX_0.1.0_x64-setup.exe" "$TEMP_FILE" || \
       download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_0.1.0_x64-setup.exe" "$TEMP_FILE" || \
-      download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_0.1.0_x64-setup.exe" "$TEMP_FILE"
+      download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_0.1.0_x64-setup.exe" "$TEMP_FILE" || {
+        echo -e "${RED}✘ Download failed. Please check your internet connection.${NC}"; exit 1;
+      }
     installer="$TEMP_FILE"
   fi
 
@@ -152,7 +170,7 @@ install_windows() {
 case "$OS_NAME" in
   Darwin*) install_macos ;;
   Linux*)
-    if grep -qi microsoft /proc/version 2>/dev/null && command -v cmd.exe >/dev/null 2>&1; then
+    if grep -qi microsoft /proc/version && command -v cmd.exe >/dev/null 2>&1; then
       echo -e "${BLUE}ℹ  WSL detected. Forwarding to Windows installer...${NC}"
       install_windows
     else
