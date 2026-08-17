@@ -38,8 +38,8 @@ if ($localInstaller -and (Test-Path -Path $localInstaller)) {
     $tempFile = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), "AbabilX_0.1.0_x64-setup.exe")
     
     $downloadUrls = @(
+        "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX_0.1.0_x64-setup.exe",
         "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_0.1.0_x64-setup.exe",
-        "https://github.com/AbabilX/ababilxdesktopfile/releases/latest/download/AbabilX_0.1.0_x64-setup.exe",
         "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_0.1.0_x64-setup.exe"
     )
     
@@ -65,7 +65,7 @@ if ($localInstaller -and (Test-Path -Path $localInstaller)) {
     }
     
     if (-not $downloaded) {
-        Write-Host "`n✘ Download failed. Unable to fetch installer binary from any mirror.`n" -ForegroundColor Red
+        Write-Host "`n✘ Download failed. Unable to fetch installer binary from any release mirror.`n" -ForegroundColor Red
         return
     }
     

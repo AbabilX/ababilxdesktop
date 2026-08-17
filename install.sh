@@ -5,7 +5,7 @@ set -e
 # AbabilX Desktop Universal Cross-Platform Installer
 # macOS (Apple Silicon / Intel) | Linux (x86_64 / arm64) | Windows (Bash / WSL)
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/AbabilX/ababilxdesktopfile/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/install.sh | bash
 # ==============================================================================
 
 GREEN='\033[0;32m'
@@ -53,8 +53,8 @@ install_macos() {
   if [ -z "$dmg_path" ] || [ ! -f "$dmg_path" ]; then
     echo -e "${YELLOW}⬇  Downloading AbabilX for macOS ($ARCH)...${NC}"
     TEMP_FILE="$(mktemp /tmp/AbabilX_XXXXXX.dmg)"
-    download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_0.1.0_${suffix}.dmg" "$TEMP_FILE" || \
-      download_pkg "https://github.com/AbabilX/ababilxdesktopfile/releases/latest/download/AbabilX_0.1.0_${suffix}.dmg" "$TEMP_FILE" || \
+    download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX_0.1.0_${suffix}.dmg" "$TEMP_FILE" || \
+      download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_0.1.0_${suffix}.dmg" "$TEMP_FILE" || \
       download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_0.1.0_${suffix}.dmg" "$TEMP_FILE" || \
       download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_0.1.0_aarch64.dmg" "$TEMP_FILE"
     dmg_path="$TEMP_FILE"
@@ -105,7 +105,8 @@ install_linux() {
     cp -f "$local_app" "$target_bin"
   else
     echo -e "${YELLOW}⬇  Downloading AbabilX AppImage...${NC}"
-    download_pkg "https://github.com/AbabilX/ababilxdesktopfile/releases/latest/download/AbabilX_amd64.AppImage" "$target_bin"
+    download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_amd64.AppImage" "$target_bin" || \
+      download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_amd64.AppImage" "$target_bin"
   fi
 
   chmod +x "$target_bin"
@@ -123,8 +124,8 @@ install_windows() {
   if [ -z "$installer" ] || [ ! -f "$installer" ]; then
     echo -e "${YELLOW}⬇  Downloading Windows setup...${NC}"
     TEMP_FILE="$(mktemp /tmp/AbabilX_setup_XXXXXX.exe)"
-    download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_0.1.0_x64-setup.exe" "$TEMP_FILE" || \
-      download_pkg "https://github.com/AbabilX/ababilxdesktopfile/releases/latest/download/AbabilX_0.1.0_x64-setup.exe" "$TEMP_FILE" || \
+    download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX_0.1.0_x64-setup.exe" "$TEMP_FILE" || \
+      download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_0.1.0_x64-setup.exe" "$TEMP_FILE" || \
       download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_0.1.0_x64-setup.exe" "$TEMP_FILE"
     installer="$TEMP_FILE"
   fi
