@@ -1,49 +1,71 @@
-# AbabilX Desktop — Downloads
+# 🚀 AbabilX Desktop App
 
-Public release repo for AbabilX desktop installers.
+> Official cross-platform desktop application for **AbabilX** — GitHub + Slack automation, real-time voice calls, team boards, chat, and CRM.
 
-**Download:** [GitHub Releases](https://github.com/AbabilX/ababilxdesktopfile/releases/latest)
+[![Release](https://img.shields.io/github/v/release/AbabilX/ababilxdesktopfile?color=blue&label=Latest%20Version)](https://github.com/AbabilX/ababilxdesktopfile/releases/latest)
+[![Platforms](https://img.shields.io/badge/Platforms-macOS%20%7C%20Windows%20%7C%20Linux-brightgreen)](#quick-install)
+[![License](https://img.shields.io/badge/License-Proprietary-orange)](#)
 
-## Installers
+---
 
-| Platform | File |
-|----------|------|
-| Windows | `.msi` or `.exe` |
-| macOS Apple Silicon | `aarch64` `.dmg` |
-| macOS Intel | `x86_64` `.dmg` |
-| Linux | `.AppImage` or `.deb` |
+## ⚡ Quick One-Line Install (Terminal / Shell)
 
-## How releases are published
+Install or update AbabilX directly from your terminal with a single command:
 
-Installers are built in the private source repo [AbabilX/ababilxdesktopcode](https://github.com/AbabilX/ababilxdesktopcode) and uploaded here automatically when a `v*` tag is pushed.
-
-You can also upload builds manually to [AbabilX/ababilxdesktop](https://github.com/AbabilX/ababilxdesktop) if you prefer.
-
-## Install guides
-
-Full install steps, OS security bypass (SmartScreen / Gatekeeper), and build-from-source docs are in the [ababilxdesktopcode](https://github.com/AbabilX/ababilxdesktopcode) README.
-
-### Windows SmartScreen
-
-**More info** → **Run anyway**
-
-### macOS Gatekeeper
-
-**System Settings → Privacy & Security → Open Anyway**, or:
-
+### 🍎 macOS & 🐧 Linux
 ```bash
-xattr -cr /Applications/ababilxdesktop.app
+curl -fsSL https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/install.sh | bash
+```
+*Auto-detects macOS (Apple Silicon M1/M2/M3/M4 or Intel) and Linux (x86_64 / arm64), installs the app, removes Gatekeeper quarantine flags, and registers system URL deep links.*
+
+### 🪟 Windows (PowerShell)
+```powershell
+irm https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/install.ps1 | iex
+```
+*Downloads the installer and runs the setup wizard automatically.*
+
+---
+
+## 📦 Direct Downloads
+
+Download the standalone package for your operating system:
+
+| Platform | Architecture | Installer Type | Download Link |
+| :--- | :--- | :--- | :--- |
+| **macOS** | Apple Silicon (`arm64`) | `.dmg` | [Download DMG](https://github.com/AbabilX/ababilxdesktopfile/releases/latest/download/AbabilX_0.1.0_aarch64.dmg) |
+| **macOS** | Intel (`x86_64`) | `.dmg` | [Download DMG](https://github.com/AbabilX/ababilxdesktopfile/releases/latest/download/AbabilX_0.1.0_x64.dmg) |
+| **Windows** | 64-bit (`x64`) | Setup `.exe` | [Download EXE](https://github.com/AbabilX/ababilxdesktopfile/releases/latest/download/AbabilX_0.1.0_x64-setup.exe) |
+| **Windows** | 64-bit (`x64`) | Enterprise `.msi` | [Download MSI](https://github.com/AbabilX/ababilxdesktopfile/releases/latest/download/AbabilX_0.1.0_x64_en-US.msi) |
+| **Linux** | 64-bit (`x86_64`) | `.AppImage` | [Download AppImage](https://github.com/AbabilX/ababilxdesktopfile/releases/latest/download/AbabilX_amd64.AppImage) |
+| **Linux** | 64-bit (`x86_64`) | `.deb` package | [Download DEB](https://github.com/AbabilX/ababilxdesktopfile/releases/latest/download/AbabilX_amd64.deb) |
+
+---
+
+## 🛠️ Manual Installation & Security Permissions
+
+### macOS (Gatekeeper Bypass)
+If macOS shows *"AbabilX cannot be opened because Apple cannot check it for malicious software"*:
+1. Run this command in Terminal to un-quarantine the application:
+   ```bash
+   xattr -cr /Applications/AbabilX.app
+   # or if named ababilxdesktop.app:
+   xattr -cr /Applications/ababilxdesktop.app
+   ```
+2. Or open **System Settings → Privacy & Security → Click "Open Anyway"**.
+
+### Windows (SmartScreen Bypass)
+If Windows SmartScreen prompts on first launch:
+1. Click **More info**.
+2. Click **Run anyway**.
+
+### Linux (AppImage Permissions)
+```bash
+chmod +x AbabilX_amd64.AppImage
+./AbabilX_amd64.AppImage
 ```
 
-### Linux AppImage
+---
 
-```bash
-chmod +x ababilxdesktop_*.AppImage
-./ababilxdesktop_*.AppImage
-```
+## 🔄 Automatic Updates
 
-## Version check
-
-The desktop app checks `GET /v1/api/check` on launch and prompts to download when a newer version is available.
-
-Download URL points to this repo: `https://github.com/AbabilX/ababilxdesktopfile/releases/latest`
+AbabilX checks for software updates automatically on startup. When a newer version is released, you will receive an in-app notification with an instant upgrade option.
