@@ -2,7 +2,7 @@
 # AbabilX Desktop PowerShell Installer (Windows)
 #
 # Quick Run:
-#   irm https://raw.githubusercontent.com/AbabilX/ababilxdesktopfile/main/install.ps1 | iex
+#   irm https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/install.ps1 | iex
 # ==============================================================================
 
 $ErrorActionPreference = "Stop"
@@ -36,28 +36,39 @@ if ($localInstaller -and (Test-Path -Path $localInstaller)) {
 } else {
     Write-Host "⬇ Downloading latest AbabilX setup for Windows..." -ForegroundColor Yellow
     $tempFile = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), "AbabilX_0.1.0_x64-setup.exe")
-    $downloadUrl = "https://github.com/AbabilX/ababilxdesktopfile/releases/latest/download/AbabilX_0.1.0_x64-setup.exe"
+    
+    $downloadUrls = @(
+        "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_0.1.0_x64-setup.exe",
+        "https://github.com/AbabilX/ababilxdesktopfile/releases/latest/download/AbabilX_0.1.0_x64-setup.exe",
+        "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_0.1.0_x64-setup.exe"
+    )
     
     $downloaded = $false
-    if (Get-Command curl.exe -ErrorAction SilentlyContinue) {
-        & curl.exe -fSL "$downloadUrl" -o "$tempFile" --progress-bar 2>$null
-        if ($LASTEXITCODE -eq 0 -and (Test-Path $tempFile) -and ((Get-Item $tempFile).Length -gt 100000)) {
-            $downloaded = $true
+    foreach ($url in $downloadUrls) {
+        if (Get-Command curl.exe -ErrorAction SilentlyContinue) {
+            & curl.exe -fSL "$url" -o "$tempFile" --progress-bar 2>$null
+            if ($LASTEXITCODE -eq 0 -and (Test-Path $tempFile) -and ((Get-Item $tempFile).Length -gt 100000)) {
+                $downloaded = $true
+                break
+            }
+        }
+        
+        try {
+            Invoke-WebRequest -Uri $url -OutFile $tempFile -UseBasicParsing -ErrorAction Stop
+            if ((Test-Path $tempFile) -and ((Get-Item $tempFile).Length -gt 100000)) {
+                $downloaded = $true
+                break
+            }
+        } catch {
+            # Continue to next mirror
         }
     }
     
     if (-not $downloaded) {
-        try {
-            Invoke-WebRequest -Uri $downloadUrl -OutFile $tempFile -UseBasicParsing
-            if ((Test-Path $tempFile) -and ((Get-Item $tempFile).Length -gt 100000)) {
-                $downloaded = $true
-            }
-        } catch {
-            Write-Host "`n✘ Download failed. The release may not be published yet on GitHub." -ForegroundColor Red
-            Write-Host "URL: $downloadUrl`n" -ForegroundColor Yellow
-            return
-        }
+        Write-Host "`n✘ Download failed. Unable to fetch installer binary from any mirror.`n" -ForegroundColor Red
+        return
     }
+    
     $installerPath = $tempFile
 }
 
