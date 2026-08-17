@@ -2,7 +2,7 @@
 
 > Official cross-platform desktop application for **AbabilX** — GitHub + Slack automation, real-time voice calls, team boards, chat, and CRM.
 
-[![Release](https://img.shields.io/github/v/release/AbabilX/ababilxdesktopfile?color=blue&label=Latest%20Version)](https://github.com/AbabilX/ababilxdesktopfile/releases/latest)
+[![Release](https://img.shields.io/github/v/release/AbabilX/ababilxdesktop?color=blue&label=Latest%20Version)](https://github.com/AbabilX/ababilxdesktop/releases/latest)
 [![Platforms](https://img.shields.io/badge/Platforms-macOS%20%7C%20Windows%20%7C%20Linux-brightgreen)](#quick-install)
 [![License](https://img.shields.io/badge/License-Proprietary-orange)](#)
 
@@ -14,13 +14,13 @@ Install or update AbabilX directly from your terminal with a single command:
 
 ### 🍎 macOS & 🐧 Linux
 ```bash
-curl -fsSL https://raw.githubusercontent.com/AbabilX/ababilxdesktopfile/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/install.sh | bash
 ```
 *Auto-detects macOS (Apple Silicon M1/M2/M3/M4 or Intel) and Linux (x86_64 / arm64), installs the app, removes Gatekeeper quarantine flags, and registers system URL deep links.*
 
 ### 🪟 Windows (PowerShell)
 ```powershell
-irm https://raw.githubusercontent.com/AbabilX/ababilxdesktopfile/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/install.ps1 | iex
 ```
 *Downloads the installer and runs the setup wizard automatically.*
 
