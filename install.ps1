@@ -2,7 +2,7 @@
 # AbabilX Desktop PowerShell Installer (Windows)
 #
 # Quick Run:
-#   irm https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/install.ps1 | iex
+#   irm https://raw.githubusercontent.com/AbabilX/ababilxdesktopfile/main/install.ps1 | iex
 # ==============================================================================
 
 $ErrorActionPreference = "Stop"
@@ -15,9 +15,12 @@ $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path 2>$null
 $localInstaller = $null
 
 if ($scriptDir) {
-    $candidates = Get-ChildItem -Path (Join-Path $scriptDir "desktopapp") -Recurse -Include "AbabilX*setup.exe","AbabilX*.msi" -ErrorAction SilentlyContinue | Select-Object -First 1
-    if ($candidates) {
-        $localInstaller = $candidates.FullName
+    $exeCandidate = Get-ChildItem -Path (Join-Path $scriptDir "desktopapp") -Recurse -Filter "*setup.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+    $msiCandidate = Get-ChildItem -Path (Join-Path $scriptDir "desktopapp") -Recurse -Filter "*.msi" -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($exeCandidate) {
+        $localInstaller = $exeCandidate.FullName
+    } elseif ($msiCandidate) {
+        $localInstaller = $msiCandidate.FullName
     }
 }
 

@@ -5,7 +5,7 @@ set -e
 # AbabilX Desktop Universal Cross-Platform Installer
 # macOS (Apple Silicon / Intel) | Linux (x86_64 / arm64) | Windows (Bash / WSL)
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/AbabilX/ababilxdesktopfile/main/install.sh | bash
 # ==============================================================================
 
 GREEN='\033[0;32m'
@@ -96,7 +96,7 @@ install_linux() {
   local target_bin="$bin_dir/ababilx"
 
   local local_app=""
-  [ -n "$SCRIPT_DIR" ] && local_app="$(find "$SCRIPT_DIR/desktopapp" -name "AbabilX*.AppImage" 2>/dev/null | head -n 1 || true)"
+  [ -n "$SCRIPT_DIR" ] && local_app="$(find "$SCRIPT_DIR/desktopapp" -name "AbabilX*.AppImage" -o -name "*.AppImage" 2>/dev/null | head -n 1 || true)"
 
   if [ -n "$local_app" ] && [ -f "$local_app" ]; then
     echo -e "${GREEN}✔  Using local installer:${NC} $local_app"
@@ -125,11 +125,19 @@ install_windows() {
     installer="$TEMP_FILE"
   fi
 
+  # Convert path to Windows format if running under WSL or Cygwin/MSYS
+  local win_installer="$installer"
+  if command -v wslpath >/dev/null 2>&1; then
+    win_installer="$(wslpath -w "$installer")"
+  elif command -v cygpath >/dev/null 2>&1; then
+    win_installer="$(cygpath -w "$installer")"
+  fi
+
   echo -e "${GREEN}🚀 Launching setup wizard...${NC}"
   if command -v cmd.exe >/dev/null 2>&1; then
-    cmd.exe /c start "" "$installer"
+    cmd.exe /c start "" "$win_installer"
   elif command -v powershell.exe >/dev/null 2>&1; then
-    powershell.exe -Command "Start-Process '$installer'"
+    powershell.exe -Command "Start-Process '$win_installer'"
   else
     "$installer" &
   fi
