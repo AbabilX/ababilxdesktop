@@ -133,38 +133,52 @@ install_linux() {
 install_windows() {
   echo -e "${BLUE}ℹ  Target Platform:${NC} Windows ($ARCH)"
   local local_setup=""
-  [ -n "$SCRIPT_DIR" ] && local_setup="$(find "$SCRIPT_DIR/desktopapp" -name "AbabilX*setup.exe" -o -name "AbabilX*.msi" | head -n 1 || true)"
+  if [ -n "$SCRIPT_DIR" ] && [ -d "$SCRIPT_DIR/desktopapp" ]; then
+    local_setup="$(find "$SCRIPT_DIR/desktopapp" -type f \( -name "AbabilX*.exe" -o -name "AbabilX*.msi" -o -name "*setup*.exe" \) 2>/dev/null | head -n 1 || true)"
+  fi
 
   local installer="$local_setup"
   if [ -z "$installer" ] || [ ! -f "$installer" ]; then
     echo -e "${YELLOW}⬇  Downloading Windows setup...${NC}"
-    local rand_id="$(head -c 8 /dev/urandom | xxd -p || echo $$)"
-    TEMP_FILE="$(mktemp /tmp/AbabilX_setup_${rand_id}_XXXXXX.exe || echo "/tmp/AbabilX_setup_${rand_id}.exe")"
-    download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX_0.1.0_x64-setup.exe" "$TEMP_FILE" || \
+    local rand_id
+    rand_id="$(head -c 8 /dev/urandom 2>/dev/null | xxd -p 2>/dev/null || echo $$)"
+    
+    local tmp_base="${TEMP:-${TMP:-/tmp}}"
+    [ -d "$tmp_base" ] || tmp_base="/tmp"
+
+    TEMP_FILE="$(mktemp "${tmp_base}/AbabilX_setup_${rand_id}_XXXXXX.exe" 2>/dev/null || echo "${tmp_base}/AbabilX_setup_${rand_id}.exe")"
+    download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX.exe" "$TEMP_FILE" || \
+      download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX.exe" "$TEMP_FILE" || \
+      download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX_0.1.0_x64-setup.exe" "$TEMP_FILE" || \
       download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_0.1.0_x64-setup.exe" "$TEMP_FILE" || \
-      download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_0.1.0_x64-setup.exe" "$TEMP_FILE" || {
+      download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX.msi" "$TEMP_FILE" || \
+      download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX.msi" "$TEMP_FILE" || \
+      download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_0.1.0_x64-setup.exe" "$TEMP_FILE" || \
+      download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_0.1.0_x64_en-US.msi" "$TEMP_FILE" || {
         echo -e "${RED}✘ Download failed. Please check your internet connection.${NC}"; exit 1;
       }
     installer="$TEMP_FILE"
+  else
+    echo -e "${GREEN}✔  Using local installer:${NC} $installer"
   fi
 
-  # Convert path to Windows format if running under WSL or Cygwin/MSYS
+  # Convert path to Windows format if running under WSL or Cygwin/MSYS/Git Bash
   local win_installer="$installer"
-  if command -v wslpath >/dev/null 2>&1; then
-    win_installer="$(wslpath -w "$installer")"
-  elif command -v cygpath >/dev/null 2>&1; then
+  if command -v cygpath >/dev/null 2>&1; then
     win_installer="$(cygpath -w "$installer")"
+  elif command -v wslpath >/dev/null 2>&1; then
+    win_installer="$(wslpath -w "$installer")"
   fi
 
-  echo -e "${GREEN}🚀 Launching setup wizard...${NC}"
-  if command -v cmd.exe >/dev/null 2>&1; then
+  echo -e "${GREEN}🚀 Launching setup: $win_installer...${NC}"
+  if command -v powershell.exe >/dev/null 2>&1; then
+    powershell.exe -NoProfile -Command "Start-Process -FilePath '$win_installer' -Wait" || powershell.exe -NoProfile -Command "Start-Process -FilePath '$win_installer'"
+  elif command -v cmd.exe >/dev/null 2>&1; then
     cmd.exe /c start "" "$win_installer"
-  elif command -v powershell.exe >/dev/null 2>&1; then
-    powershell.exe -Command "Start-Process '$win_installer'"
   else
     "$installer" &
   fi
-  echo -e "${GREEN}✔  Installer launched.${NC}\n"
+  echo -e "${GREEN}✔  AbabilX installation process completed!${NC}\n"
 }
 
 case "$OS_NAME" in

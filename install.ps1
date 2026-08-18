@@ -42,9 +42,14 @@ if ($localInstaller -and (Test-Path -Path $localInstaller)) {
     $tempFile = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), "AbabilX_setup_$uniqueId.exe")
     
     $downloadUrls = @(
+        "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX.exe",
+        "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX.exe",
         "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX_0.1.0_x64-setup.exe",
         "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_0.1.0_x64-setup.exe",
-        "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_0.1.0_x64-setup.exe"
+        "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX.msi",
+        "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX.msi",
+        "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_0.1.0_x64-setup.exe",
+        "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_0.1.0_x64_en-US.msi"
     )
     
     $downloaded = $false
