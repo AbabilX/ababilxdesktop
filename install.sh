@@ -21,16 +21,22 @@ echo -e "${BOLD}${BLUE}╚══════════════════
 
 OS_NAME="$(uname -s)"
 ARCH="$(uname -m)"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd || echo "")"
+SCRIPT_DIR=""
+if [ -n "${BASH_SOURCE[0]:-}" ] && [ -f "${BASH_SOURCE[0]}" ]; then
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd 2>/dev/null || echo "")"
+fi
 
 cleanup() {
-  [ -n "${MOUNT_DIR:-}" ] && [ -d "$MOUNT_DIR" ] && hdiutil detach "$MOUNT_DIR" || true
-  [ -n "${MOUNT_DIR:-}" ] && rm -rf "$MOUNT_DIR" || true
+  [ -n "${MOUNT_DIR:-}" ] && [ -d "$MOUNT_DIR" ] && hdiutil detach "$MOUNT_DIR" >/dev/null 2>&1 || true
+  [ -n "${MOUNT_DIR:-}" ] && rm -rf "$MOUNT_DIR" 2>/dev/null || true
   # Only clean temp file on non-Windows to avoid removing active installer binary
   case "$OS_NAME" in
-    Darwin*|Linux*)
-      if ! grep -qi microsoft /proc/version; then
-        [ -n "${TEMP_FILE:-}" ] && rm -f "$TEMP_FILE" || true
+    Darwin*)
+      [ -n "${TEMP_FILE:-}" ] && rm -f "$TEMP_FILE" 2>/dev/null || true
+      ;;
+    Linux*)
+      if [ ! -f /proc/version ] || ! grep -qi microsoft /proc/version; then
+        [ -n "${TEMP_FILE:-}" ] && rm -f "$TEMP_FILE" 2>/dev/null || true
       fi
       ;;
   esac
@@ -39,6 +45,7 @@ trap cleanup EXIT INT TERM
 
 download_pkg() {
   local url="$1" dest="$2"
+  [ -z "$dest" ] && return 1
   if command -v curl >/dev/null 2>&1; then
     curl -fSL "$url" -o "$dest" --progress-bar || return 1
   elif command -v wget >/dev/null 2>&1; then
@@ -56,7 +63,9 @@ install_macos() {
   [ "$ARCH" = "x86_64" ] && suffix="x64"
 
   local local_dmg=""
-  [ -n "$SCRIPT_DIR" ] && local_dmg="$(find "$SCRIPT_DIR/desktopapp" -name "*${suffix}*.dmg" -o -name "AbabilX*.dmg" | head -n 1 || true)"
+  if [ -n "$SCRIPT_DIR" ] && [ -d "$SCRIPT_DIR/desktopapp" ]; then
+    local_dmg="$(find "$SCRIPT_DIR/desktopapp" -name "*${suffix}*.dmg" -o -name "AbabilX*.dmg" -o -name "Macos*.dmg" 2>/dev/null | head -n 1 || true)"
+  fi
 
   local dmg_path="$local_dmg"
   if [ -z "$dmg_path" ] || [ ! -f "$dmg_path" ]; then
