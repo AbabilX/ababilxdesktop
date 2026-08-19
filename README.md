@@ -32,10 +32,10 @@ Download the standalone package for your operating system:
 
 | Platform | Architecture | Installer Type | Download Link |
 | :--- | :--- | :--- | :--- |
-| **macOS** | Apple Silicon (`arm64`) | `.dmg` | [Download DMG](https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX_0.1.0_aarch64.dmg) |
-| **macOS** | Intel (`x86_64`) | `.dmg` | [Download DMG](https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX_0.1.0_aarch64.dmg) |
-| **Windows** | 64-bit (`x64`) | Setup `.exe` | [Download EXE](https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX_0.1.0_x64-setup.exe) |
-| **Windows** | 64-bit (`x64`) | Enterprise `.msi` | [Download MSI](https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX_0.1.0_x64_en-US.msi) |
+| **macOS** | Apple Silicon (`arm64`) | `.dmg` | [Download DMG](https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/Macos_Relased.dmg) |
+| **macOS** | Intel (`x86_64`) | `.dmg` | [Download DMG](https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/Macos_Relased.dmg) |
+| **Windows** | 64-bit (`x64`) | Setup `.exe` | [Download EXE](https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX.exe) |
+| **Windows** | 64-bit (`x64`) | Enterprise `.msi` | [Download MSI](https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX.msi) |
 | **Linux** | 64-bit (`x86_64`) | `.AppImage` | [Download AppImage](https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_amd64.AppImage) |
 | **Linux** | 64-bit (`x86_64`) | `.deb` package | [Download DEB](https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_amd64.deb) |
 
