@@ -62,12 +62,13 @@ install_macos() {
   if [ -z "$dmg_path" ] || [ ! -f "$dmg_path" ]; then
     echo -e "${YELLOW}⬇  Downloading AbabilX for macOS ($ARCH)...${NC}"
     TEMP_FILE="$(mktemp /tmp/AbabilX_XXXXXX.dmg)"
-    download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX_0.1.0_${suffix}.dmg" "$TEMP_FILE" || \
+    download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_0.1.0_${suffix}.dmg" "$TEMP_FILE" || \
+      download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_0.1.0_aarch64.dmg" "$TEMP_FILE" || \
+      download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX.dmg" "$TEMP_FILE" || \
+      download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX_0.1.0_${suffix}.dmg" "$TEMP_FILE" || \
       download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX_0.1.0_aarch64.dmg" "$TEMP_FILE" || \
       download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_0.1.0_${suffix}.dmg" "$TEMP_FILE" || \
-      download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_0.1.0_aarch64.dmg" "$TEMP_FILE" || \
-      download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_0.1.0_${suffix}.dmg" "$TEMP_FILE" || \
-      download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_0.1.0_aarch64.dmg" "$TEMP_FILE" || {
+      download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_0.1.0_aarch64.dmg" "$TEMP_FILE" || {
         echo -e "${RED}✘ Download failed. Please check your internet connection.${NC}"; exit 1;
       }
     dmg_path="$TEMP_FILE"
@@ -147,14 +148,14 @@ install_windows() {
     [ -d "$tmp_base" ] || tmp_base="/tmp"
 
     TEMP_FILE="$(mktemp "${tmp_base}/AbabilX_setup_${rand_id}_XXXXXX.exe" 2>/dev/null || echo "${tmp_base}/AbabilX_setup_${rand_id}.exe")"
-    download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX.exe" "$TEMP_FILE" || \
-      download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX.exe" "$TEMP_FILE" || \
-      download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX_0.1.0_x64-setup.exe" "$TEMP_FILE" || \
-      download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_0.1.0_x64-setup.exe" "$TEMP_FILE" || \
-      download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX.msi" "$TEMP_FILE" || \
-      download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX.msi" "$TEMP_FILE" || \
+    download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX.exe" "$TEMP_FILE" || \
+      download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX.msi" "$TEMP_FILE" || \
       download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_0.1.0_x64-setup.exe" "$TEMP_FILE" || \
-      download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_0.1.0_x64_en-US.msi" "$TEMP_FILE" || {
+      download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_0.1.0_x64_en-US.msi" "$TEMP_FILE" || \
+      download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX.exe" "$TEMP_FILE" || \
+      download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX.exe" "$TEMP_FILE" || \
+      download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX.msi" "$TEMP_FILE" || \
+      download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX.msi" "$TEMP_FILE" || {
         echo -e "${RED}✘ Download failed. Please check your internet connection.${NC}"; exit 1;
       }
     installer="$TEMP_FILE"
