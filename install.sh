@@ -61,6 +61,7 @@ install_macos() {
   local dmg_path="$local_dmg"
   if [ -z "$dmg_path" ] || [ ! -f "$dmg_path" ]; then
     echo -e "${YELLOW}⬇  Downloading AbabilX for macOS ($ARCH)...${NC}"
+    TEMP_FILE="$(mktemp /tmp/AbabilX_XXXXXX.dmg)"
     download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/Macos_Relased.dmg" "$TEMP_FILE" || \
       download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/Macos_Relased.dmg" "$TEMP_FILE" || \
       download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_0.1.0_aarch64.dmg" "$TEMP_FILE" || \
