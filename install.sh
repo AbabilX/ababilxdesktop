@@ -57,6 +57,31 @@ download_pkg() {
   [ -s "$dest" ] || return 1
 }
 
+REPO="${ABABILX_REPO:-AbabilX/ababilxdesktop}"
+
+# Resolves a download URL from the newest GitHub release, so a renamed or
+# version-stamped asset (AbabilX_0.2.0_aarch64.dmg) still installs without the
+# script knowing the version. $1 is an extended-regex matched against the URL.
+gh_latest_asset() {
+  local pattern="$1"
+  curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" 2>/dev/null \
+    | grep -o '"browser_download_url"[[:space:]]*:[[:space:]]*"[^"]*"' \
+    | sed 's/.*"\(https[^"]*\)".*/\1/' \
+    | grep -iE "$pattern" \
+    | head -n 1
+}
+
+# Tries each URL in order and stops at the first that downloads.
+download_first() {
+  local dest="$1"; shift
+  local url
+  for url in "$@"; do
+    [ -z "$url" ] && continue
+    download_pkg "$url" "$dest" && return 0
+  done
+  return 1
+}
+
 install_macos() {
   echo -e "${BLUE}ℹ  Target Platform:${NC} macOS ($ARCH)"
   local suffix="aarch64"
@@ -71,15 +96,14 @@ install_macos() {
   if [ -z "$dmg_path" ] || [ ! -f "$dmg_path" ]; then
     echo -e "${YELLOW}⬇  Downloading AbabilX for macOS ($ARCH)...${NC}"
     TEMP_FILE="$(mktemp /tmp/AbabilX_XXXXXX.dmg)"
-    download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/Macos_Relased.dmg" "$TEMP_FILE" || \
-      download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/Macos_Relased.dmg" "$TEMP_FILE" || \
-      download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_0.1.0_aarch64.dmg" "$TEMP_FILE" || \
-      download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX.dmg" "$TEMP_FILE" || \
-      download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_0.1.0_${suffix}.dmg" "$TEMP_FILE" || \
-      download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX_0.1.0_${suffix}.dmg" "$TEMP_FILE" || \
-      download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX_0.1.0_aarch64.dmg" "$TEMP_FILE" || \
-      download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_0.1.0_${suffix}.dmg" "$TEMP_FILE" || \
-      download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_0.1.0_aarch64.dmg" "$TEMP_FILE" || {
+    # Newest release first — a pinned v0.1 URL ahead of these would reinstall the
+    # old build forever and leave the app stuck on "update available".
+    download_first "$TEMP_FILE" \
+      "https://github.com/$REPO/releases/latest/download/AbabilX_${suffix}.dmg" \
+      "https://github.com/$REPO/releases/latest/download/AbabilX.dmg" \
+      "$(gh_latest_asset "${suffix}.*\\.dmg$")" \
+      "$(gh_latest_asset "\\.dmg$")" \
+      "https://github.com/$REPO/releases/download/v0.1/Macos_Relased.dmg" || {
         echo -e "${RED}✘ Download failed. Please check your internet connection.${NC}"; exit 1;
       }
     dmg_path="$TEMP_FILE"
@@ -130,8 +154,12 @@ install_linux() {
     cp -f "$local_app" "$target_bin"
   else
     echo -e "${YELLOW}⬇  Downloading AbabilX AppImage...${NC}"
-    download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_amd64.AppImage" "$target_bin" || \
-      download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_amd64.AppImage" "$target_bin" || {
+    local deb_arch="amd64"
+    case "$ARCH" in aarch64|arm64) deb_arch="arm64" ;; esac
+    download_first "$target_bin" \
+      "https://github.com/$REPO/releases/latest/download/AbabilX_${deb_arch}.AppImage" \
+      "$(gh_latest_asset "${deb_arch}.*\\.AppImage$")" \
+      "$(gh_latest_asset "\\.AppImage$")" || {
         echo -e "${RED}✘ Download failed. Please check your internet connection.${NC}"; exit 1;
       }
   fi
@@ -159,14 +187,13 @@ install_windows() {
     [ -d "$tmp_base" ] || tmp_base="/tmp"
 
     TEMP_FILE="$(mktemp "${tmp_base}/AbabilX_setup_${rand_id}_XXXXXX.exe" 2>/dev/null || echo "${tmp_base}/AbabilX_setup_${rand_id}.exe")"
-    download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX.exe" "$TEMP_FILE" || \
-      download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX.msi" "$TEMP_FILE" || \
-      download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_0.1.0_x64-setup.exe" "$TEMP_FILE" || \
-      download_pkg "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_0.1.0_x64_en-US.msi" "$TEMP_FILE" || \
-      download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX.exe" "$TEMP_FILE" || \
-      download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX.exe" "$TEMP_FILE" || \
-      download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX.msi" "$TEMP_FILE" || \
-      download_pkg "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX.msi" "$TEMP_FILE" || {
+    download_first "$TEMP_FILE" \
+      "https://github.com/$REPO/releases/latest/download/AbabilX_setup.exe" \
+      "https://github.com/$REPO/releases/latest/download/AbabilX.exe" \
+      "$(gh_latest_asset "setup\\.exe$")" \
+      "$(gh_latest_asset "\\.exe$")" \
+      "$(gh_latest_asset "\\.msi$")" \
+      "https://github.com/$REPO/releases/download/v0.1/AbabilX.exe" || {
         echo -e "${RED}✘ Download failed. Please check your internet connection.${NC}"; exit 1;
       }
     installer="$TEMP_FILE"

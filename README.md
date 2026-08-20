@@ -66,6 +66,20 @@ chmod +x AbabilX_amd64.AppImage
 
 ---
 
-## 🔄 Automatic Updates
+## 🔄 Updates
 
-AbabilX checks for software updates automatically on startup. When a newer version is released, you will receive an in-app notification with an instant upgrade option.
+AbabilX checks for a newer version on startup and every 6 hours. When one exists, a dialog
+shows the install command for your OS:
+
+| Platform | Command |
+| :--- | :--- |
+| macOS / Linux | `curl -fsSL https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/install.sh \| bash` |
+| Windows | `irm https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/install.ps1 \| iex` |
+
+Press **Copy command & quit** — AbabilX copies the command and closes itself (closing the
+window alone only hides it to the tray, and the installer cannot replace a running app).
+Paste the command into a terminal; the installer downloads the newest release, replaces the
+app, and reopens it.
+
+The app does **not** replace itself in the background. Updating is always a deliberate,
+user-run step.

@@ -41,19 +41,32 @@ if ($localInstaller -and (Test-Path -Path $localInstaller)) {
     $uniqueId = [System.Guid]::NewGuid().ToString('N').Substring(0, 8)
     $tempFile = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), "AbabilX_setup_$uniqueId.exe")
     
+    $repo = if ($env:ABABILX_REPO) { $env:ABABILX_REPO } else { "AbabilX/ababilxdesktop" }
+
+    # Newest release first. A pinned v0.1 URL ahead of these would reinstall the
+    # old build every time and leave the app stuck on "update available".
     $downloadUrls = @(
-        "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX.exe",
-        "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX.msi",
-        "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_0.1.0_x64-setup.exe",
-        "https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/desktopapp/v0.1/AbabilX_0.1.0_x64_en-US.msi",
-        "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX.exe",
-        "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX.exe",
-        "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX.msi",
-        "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX.msi",
-        "https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX_0.1.0_x64-setup.exe",
-        "https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_0.1.0_x64-setup.exe"
+        "https://github.com/$repo/releases/latest/download/AbabilX_setup.exe",
+        "https://github.com/$repo/releases/latest/download/AbabilX.exe"
     )
-    
+
+    # Version-stamped assets (AbabilX_0.2.0_x64-setup.exe) are resolved from the
+    # release API so the script never needs to know the version number.
+    try {
+        $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$repo/releases/latest" -UseBasicParsing -ErrorAction Stop
+        $apiAssets = $release.assets | Where-Object { $_.name -match '\.(exe|msi)$' } |
+            Sort-Object { if ($_.name -match 'setup\.exe$') { 0 } elseif ($_.name -match '\.exe$') { 1 } else { 2 } } |
+            ForEach-Object { $_.browser_download_url }
+        if ($apiAssets) { $downloadUrls += $apiAssets }
+    } catch {
+        # Offline or rate-limited — the direct latest/download URLs above still apply.
+    }
+
+    $downloadUrls += @(
+        "https://github.com/$repo/releases/latest/download/AbabilX.msi",
+        "https://github.com/$repo/releases/download/v0.1/AbabilX.exe"
+    )
+
     $downloaded = $false
     foreach ($url in $downloadUrls) {
         if (Get-Command curl.exe -ErrorAction SilentlyContinue) {
