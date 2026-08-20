@@ -23,7 +23,12 @@ if ($PSScriptRoot) {
 
 $localInstaller = $null
 
-if ($scriptDir -and (Test-Path -Path (Join-Path $scriptDir "desktopapp"))) {
+# Bundled installers under desktopapp/ are for offline installs only, and are
+# opt-in: preferring them by default would make a clone reinstall the old build
+# and leave the app stuck on "update available" forever.
+$useLocal = $env:ABABILX_LOCAL -eq "1"
+
+if ($useLocal -and $scriptDir -and (Test-Path -Path (Join-Path $scriptDir "desktopapp"))) {
     $exeCandidate = Get-ChildItem -Path (Join-Path $scriptDir "desktopapp") -Recurse -Filter "*setup.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
     $msiCandidate = Get-ChildItem -Path (Join-Path $scriptDir "desktopapp") -Recurse -Filter "*.msi" -ErrorAction SilentlyContinue | Select-Object -First 1
     if ($exeCandidate) {

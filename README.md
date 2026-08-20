@@ -32,12 +32,22 @@ Download the standalone package for your operating system:
 
 | Platform | Architecture | Installer Type | Download Link |
 | :--- | :--- | :--- | :--- |
-| **macOS** | Apple Silicon (`arm64`) | `.dmg` | [Download DMG](https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/Macos_Relased.dmg) |
-| **macOS** | Intel (`x86_64`) | `.dmg` | [Download DMG](https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/Macos_Relased.dmg) |
-| **Windows** | 64-bit (`x64`) | Setup `.exe` | [Download EXE](https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX.exe) |
-| **Windows** | 64-bit (`x64`) | Enterprise `.msi` | [Download MSI](https://github.com/AbabilX/ababilxdesktop/releases/download/v0.1/AbabilX.msi) |
+| **macOS** | Apple Silicon (`arm64`) | `.dmg` | [Download DMG](https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_aarch64.dmg) |
+| **macOS** | Intel (`x86_64`) | `.dmg` | [Download DMG](https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_x64.dmg) |
+| **Windows** | 64-bit (`x64`) | Setup `.exe` | [Download EXE](https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_setup.exe) |
+| **Windows** | 64-bit (`x64`) | Enterprise `.msi` | [Download MSI](https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX.msi) |
 | **Linux** | 64-bit (`x86_64`) | `.AppImage` | [Download AppImage](https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_amd64.AppImage) |
-| **Linux** | 64-bit (`x86_64`) | `.deb` package | [Download DEB](https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_amd64.deb) |
+| **Linux** | arm64 | `.AppImage` | [Download AppImage](https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_arm64.AppImage) |
+
+All links point at the **latest** release. A platform missing from the newest release
+simply has no build yet — the app will not prompt those users to update.
+
+Offline install from a clone of this repo uses the bundled files under `desktopapp/`,
+and is opt-in so it can never shadow a newer release:
+
+```bash
+ABABILX_LOCAL=1 ./install.sh
+```
 
 ---
 

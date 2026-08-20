@@ -59,6 +59,12 @@ download_pkg() {
 
 REPO="${ABABILX_REPO:-AbabilX/ababilxdesktop}"
 
+# Bundled installers under desktopapp/ are for offline installs only. They are
+# opt-in because they go stale the moment a new release ships: preferring them
+# by default would make `./install.sh` from a clone reinstall the old build and
+# leave the app stuck on "update available" forever.
+use_local() { [ "${ABABILX_LOCAL:-0}" = "1" ]; }
+
 # Resolves a download URL from the newest GitHub release, so a renamed or
 # version-stamped asset (AbabilX_0.2.0_aarch64.dmg) still installs without the
 # script knowing the version. $1 is an extended-regex matched against the URL.
@@ -88,7 +94,7 @@ install_macos() {
   [ "$ARCH" = "x86_64" ] && suffix="x64"
 
   local local_dmg=""
-  if [ -n "$SCRIPT_DIR" ] && [ -d "$SCRIPT_DIR/desktopapp" ]; then
+  if use_local && [ -n "$SCRIPT_DIR" ] && [ -d "$SCRIPT_DIR/desktopapp" ]; then
     local_dmg="$(find "$SCRIPT_DIR/desktopapp" -name "*${suffix}*.dmg" -o -name "AbabilX*.dmg" -o -name "Macos*.dmg" 2>/dev/null | head -n 1 || true)"
   fi
 
@@ -147,7 +153,7 @@ install_linux() {
   local target_bin="$bin_dir/ababilx"
 
   local local_app=""
-  [ -n "$SCRIPT_DIR" ] && local_app="$(find "$SCRIPT_DIR/desktopapp" -name "AbabilX*.AppImage" -o -name "*.AppImage" | head -n 1 || true)"
+  use_local && [ -n "$SCRIPT_DIR" ] && local_app="$(find "$SCRIPT_DIR/desktopapp" -name "AbabilX*.AppImage" -o -name "*.AppImage" | head -n 1 || true)"
 
   if [ -n "$local_app" ] && [ -f "$local_app" ]; then
     echo -e "${GREEN}✔  Using local installer:${NC} $local_app"
@@ -173,7 +179,7 @@ install_linux() {
 install_windows() {
   echo -e "${BLUE}ℹ  Target Platform:${NC} Windows ($ARCH)"
   local local_setup=""
-  if [ -n "$SCRIPT_DIR" ] && [ -d "$SCRIPT_DIR/desktopapp" ]; then
+  if use_local && [ -n "$SCRIPT_DIR" ] && [ -d "$SCRIPT_DIR/desktopapp" ]; then
     local_setup="$(find "$SCRIPT_DIR/desktopapp" -type f \( -name "AbabilX*.exe" -o -name "AbabilX*.msi" -o -name "*setup*.exe" \) 2>/dev/null | head -n 1 || true)"
   fi
 
