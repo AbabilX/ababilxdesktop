@@ -124,7 +124,17 @@ if (-not $downloaded) {
     return
 }
 
-# 4. Launch new installer
-Write-Host "🚀 Launching AbabilX installer..." -ForegroundColor Green
-Start-Process -FilePath $tempFile -Wait
+# 4. Install silently and launch app
+Write-Host "🚀 Installing AbabilX..." -ForegroundColor Green
+Start-Process -FilePath $tempFile -ArgumentList "/S" -Wait
+
+# Clean up temp installer binary
+Remove-Item -Path $tempFile -Force -ErrorAction SilentlyContinue
+
+$installedExe = "$env:LOCALAPPDATA\AbabilX\ababilxdesktop.exe"
+if (Test-Path $installedExe) {
+    Write-Host "🎉 Launching AbabilX..." -ForegroundColor Green
+    Start-Process -FilePath $installedExe
+}
+
 Write-Host "`n✔ AbabilX installation process completed!`n" -ForegroundColor Green
