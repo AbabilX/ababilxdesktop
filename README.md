@@ -42,13 +42,6 @@ Download the standalone package for your operating system:
 All links point at the **latest** release. A platform missing from the newest release
 simply has no build yet — the app will not prompt those users to update.
 
-Offline install from a clone of this repo uses the bundled files under `desktopapp/`,
-and is opt-in so it can never shadow a newer release:
-
-```bash
-ABABILX_LOCAL=1 ./install.sh
-```
-
 ---
 
 ## 🛠️ Manual Installation & Security Permissions
