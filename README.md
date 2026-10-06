@@ -16,13 +16,25 @@ Install or update AbabilX directly from your terminal with a single command:
 ```bash
 curl -fsSL https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/install.sh | bash
 ```
-*Auto-detects macOS (Apple Silicon M1/M2/M3/M4 or Intel) and Linux (x86_64 / arm64), installs the app, removes Gatekeeper quarantine flags, and registers system URL deep links.*
+*Auto-detects macOS (Apple Silicon M1/M2/M3/M4; Intel needs an `x64` build, not yet published) and Linux (x86_64 / arm64), installs the app, removes Gatekeeper quarantine flags, and registers system URL deep links.*
 
 ### 🪟 Windows (PowerShell)
 ```powershell
 irm https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/install.ps1 | iex
 ```
 *Downloads the installer and runs the setup wizard automatically.*
+
+### 🔄 Update an existing install
+
+Run the **same command again**. It downloads the newest release, quits the running app,
+replaces `/Applications/AbabilX.app` (macOS) and reopens it. Nothing else to uninstall first.
+
+Verify the installed version afterwards:
+
+```bash
+# macOS
+defaults read /Applications/AbabilX.app/Contents/Info CFBundleShortVersionString
+```
 
 ---
 
@@ -33,14 +45,11 @@ Download the standalone package for your operating system:
 | Platform | Architecture | Installer Type | Download Link |
 | :--- | :--- | :--- | :--- |
 | **macOS** | Apple Silicon (`arm64`) | `.dmg` | [Download DMG](https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_aarch64.dmg) |
-| **macOS** | Intel (`x86_64`) | `.dmg` | [Download DMG](https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_x64.dmg) |
 | **Windows** | 64-bit (`x64`) | Setup `.exe` | [Download EXE](https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_setup.exe) |
-| **Windows** | 64-bit (`x64`) | Enterprise `.msi` | [Download MSI](https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX.msi) |
-| **Linux** | 64-bit (`x86_64`) | `.AppImage` | [Download AppImage](https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_amd64.AppImage) |
-| **Linux** | arm64 | `.AppImage` | [Download AppImage](https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_arm64.AppImage) |
 
-All links point at the **latest** release. A platform missing from the newest release
-simply has no build yet — the app will not prompt those users to update.
+As of **v0.2.0** the release ships macOS Apple Silicon and Windows x64 only. Intel Mac and
+Linux builds are not published yet. All links point at the **latest** release; a platform
+missing from it simply has no build yet — the app will not prompt those users to update.
 
 ---
 
