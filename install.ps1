@@ -15,12 +15,14 @@ Write-Host "╚═════════════════════�
 Write-Host "⏳ Stopping running AbabilX instances..." -ForegroundColor Yellow
 Get-Process | Where-Object { 
     $_.ProcessName -like "*AbabilX*" -or 
+    $_.ProcessName -like "*Ababil Talk*" -or 
     $_.ProcessName -like "*ababilxdesktop*" 
 } | Stop-Process -Force -ErrorAction SilentlyContinue
 Start-Sleep -Milliseconds 500
 
 # 2. Check for and remove existing older installation
 $uninstallPaths = @(
+    "$env:LOCALAPPDATA\Ababil Talk",
     "$env:LOCALAPPDATA\AbabilX",
     "$env:LOCALAPPDATA\Programs\AbabilX",
     "$env:PROGRAMFILES\AbabilX"
@@ -35,7 +37,7 @@ $regKeys = @(
 )
 foreach ($regPath in $regKeys) {
     $entry = Get-ItemProperty $regPath -ErrorAction SilentlyContinue | 
-        Where-Object { $_.DisplayName -like "*AbabilX*" -or $_.PSChildName -like "*AbabilX*" } | 
+        Where-Object { $_.DisplayName -like "*AbabilX*" -or $_.DisplayName -like "*Ababil Talk*" -or $_.PSChildName -like "*AbabilX*" } | 
         Select-Object -First 1
     if ($entry -and $entry.UninstallString) {
         $cleanString = ($entry.UninstallString -replace '"','').Trim()
@@ -131,10 +133,12 @@ Start-Process -FilePath $tempFile -ArgumentList "/S" -Wait
 # Clean up temp installer binary
 Remove-Item -Path $tempFile -Force -ErrorAction SilentlyContinue
 
-$installedExe = "$env:LOCALAPPDATA\AbabilX\ababilxdesktop.exe"
-if (Test-Path $installedExe) {
-    Write-Host "🎉 Launching AbabilX..." -ForegroundColor Green
+# "Ababil Talk" since 0.3 (NSIS installs under the product name); older builds used AbabilX.
+$installedExe = @("$env:LOCALAPPDATA\Ababil Talk\ababilxdesktop.exe", "$env:LOCALAPPDATA\AbabilX\ababilxdesktop.exe") |
+    Where-Object { Test-Path $_ } | Select-Object -First 1
+if ($installedExe) {
+    Write-Host "🎉 Launching Ababil Talk..." -ForegroundColor Green
     Start-Process -FilePath $installedExe
 }
 
-Write-Host "`n✔ AbabilX installation process completed!`n" -ForegroundColor Green
+Write-Host "`n✔ Ababil Talk installation process completed!`n" -ForegroundColor Green

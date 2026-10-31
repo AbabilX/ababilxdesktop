@@ -121,25 +121,29 @@ install_macos() {
   MOUNT_DIR="$(mktemp -d /tmp/ababilx_mount_XXXXXX)"
   hdiutil attach "$dmg_path" -nobrowse -mountpoint "$MOUNT_DIR"
 
-  local app_src="$(find "$MOUNT_DIR" -maxdepth 2 -name "AbabilX.app" -o -name "ababilxdesktop.app" | head -n 1 || true)"
+  # The app is "Ababil Talk" since 0.3; older DMGs still carry AbabilX.app.
+  local app_src="$(find "$MOUNT_DIR" -maxdepth 2 \( -name "Ababil Talk.app" -o -name "AbabilX.app" -o -name "ababilxdesktop.app" \) | head -n 1 || true)"
   [ -z "$app_src" ] && { echo -e "${RED}✘ App not found in DMG.${NC}"; exit 1; }
 
   echo -e "${YELLOW}⏳ Stopping running instances...${NC}"
-  pkill -f "AbabilX" || true
+  pkill -f "Ababil Talk.app" || true
+  pkill -f "AbabilX.app" || true
   sleep 0.5
 
-  local target="/Applications/AbabilX.app"
+  local target="/Applications/$(basename "$app_src")"
   echo -e "${BLUE}📂 Copying to /Applications...${NC}"
   rm -rf "$target" && cp -R "$app_src" "$target"
+  # Renamed app: the old bundle would stay beside it as a second, stale copy.
+  [ "$target" != "/Applications/AbabilX.app" ] && rm -rf "/Applications/AbabilX.app"
   xattr -cr "$target" || true
 
   if [ -f "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister" ]; then
     /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "$target" || true
   fi
 
-  echo -e "\n${BOLD}${GREEN}✔  AbabilX installed to /Applications/AbabilX.app!${NC}\n"
+  echo -e "\n${BOLD}${GREEN}✔  Ababil Talk installed to $target!${NC}\n"
   if [ -t 0 ]; then
-    read -r -p "Launch AbabilX now? [Y/n] " prompt_launch || prompt_launch="y"
+    read -r -p "Launch Ababil Talk now? [Y/n] " prompt_launch || prompt_launch="y"
     case "$prompt_launch" in [nN]*) ;; *) open "$target" ;; esac
   else
     open "$target"
