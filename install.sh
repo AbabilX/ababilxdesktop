@@ -57,6 +57,7 @@ download_pkg() {
   [ -s "$dest" ] || return 1
 }
 
+# Public installer repo Releases (Ababil.Talk_* / AbabilX_*.dmg assets).
 REPO="${ABABILX_REPO:-AbabilX/ababilxdesktop}"
 
 # Bundled installers under desktopapp/ are for offline installs only. They are
@@ -167,9 +168,9 @@ install_linux() {
     local deb_arch="amd64"
     case "$ARCH" in aarch64|arm64) deb_arch="arm64" ;; esac
     download_first "$target_bin" \
-      "https://github.com/$REPO/releases/latest/download/AbabilX_${deb_arch}.AppImage" \
       "$(gh_latest_asset "${deb_arch}.*\\.AppImage$")" \
-      "$(gh_latest_asset "\\.AppImage$")" || {
+      "$(gh_latest_asset "\\.AppImage$")" \
+      "https://github.com/$REPO/releases/latest/download/AbabilX_${deb_arch}.AppImage" || {
         echo -e "${RED}✘ Download failed. Please check your internet connection.${NC}"; exit 1;
       }
   fi
@@ -198,12 +199,11 @@ install_windows() {
 
     TEMP_FILE="$(mktemp "${tmp_base}/AbabilX_setup_${rand_id}_XXXXXX.exe" 2>/dev/null || echo "${tmp_base}/AbabilX_setup_${rand_id}.exe")"
     download_first "$TEMP_FILE" \
-      "https://github.com/$REPO/releases/latest/download/AbabilX_setup.exe" \
-      "https://github.com/$REPO/releases/latest/download/AbabilX.exe" \
       "$(gh_latest_asset "setup\\.exe$")" \
       "$(gh_latest_asset "\\.exe$")" \
       "$(gh_latest_asset "\\.msi$")" \
-      "https://github.com/$REPO/releases/download/v0.1/AbabilX.exe" || {
+      "https://github.com/$REPO/releases/latest/download/AbabilX_setup.exe" \
+      "https://github.com/$REPO/releases/latest/download/AbabilX.exe" || {
         echo -e "${RED}✘ Download failed. Please check your internet connection.${NC}"; exit 1;
       }
     installer="$TEMP_FILE"

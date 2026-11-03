@@ -45,11 +45,11 @@ Download the standalone package for your operating system:
 | Platform | Architecture | Installer Type | Download Link |
 | :--- | :--- | :--- | :--- |
 | **macOS** | Apple Silicon (`arm64`) | `.dmg` | [Download DMG](https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_aarch64.dmg) |
-| **Windows** | 64-bit (`x64`) | Setup `.exe` | [Download EXE](https://github.com/AbabilX/ababilxdesktop/releases/latest/download/AbabilX_setup.exe) |
+| **Windows** | 64-bit (`x64`) | Setup `.exe` | [Download EXE](https://github.com/AbabilX/ababilxdesktop/releases/latest/download/Ababil.Talk_0.2.0_x64-setup.exe) |
+| **Windows** | 64-bit (`x64`) | `.msi` | [Download MSI](https://github.com/AbabilX/ababilxdesktop/releases/latest/download/Ababil.Talk_0.2.0_x64_en-US.msi) |
 
-As of **v0.2.0** the release ships macOS Apple Silicon and Windows x64 only. Intel Mac and
-Linux builds are not published yet. All links point at the **latest** release; a platform
-missing from it simply has no build yet — the app will not prompt those users to update.
+As of **v0.2** the public release ships macOS Apple Silicon and Windows x64. Prefer the
+one-liner installers above — they resolve the newest asset name via the GitHub API.
 
 ---
 

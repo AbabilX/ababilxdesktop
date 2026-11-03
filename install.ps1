@@ -77,26 +77,29 @@ Write-Host "⬇ Downloading latest AbabilX setup for Windows..." -ForegroundColo
 $uniqueId = [System.Guid]::NewGuid().ToString('N').Substring(0, 8)
 $tempFile = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), "AbabilX_setup_$uniqueId.exe")
 
+# Public installer repo Releases (Ababil.Talk_*_x64-setup.exe, …).
 $repo = if ($env:ABABILX_REPO) { $env:ABABILX_REPO } else { "AbabilX/ababilxdesktop" }
 
-# Primary target: standard setup executable
-$downloadUrls = @(
-    "https://github.com/$repo/releases/latest/download/AbabilX_setup.exe",
-    "https://github.com/$repo/releases/latest/download/AbabilX.exe"
-)
+$downloadUrls = @()
 
-# Fetch latest release assets from GitHub API
+# Prefer GitHub API so version-stamped names (Ababil.Talk_0.2.0_x64-setup.exe) resolve.
 try {
     $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$repo/releases/latest" -UseBasicParsing -ErrorAction Stop
     $apiAssets = $release.assets | Where-Object { $_.name -match '\.(exe|msi)$' } |
-        Sort-Object { if ($_.name -match 'setup\.exe$') { 0 } elseif ($_.name -match '\.exe$') { 1 } else { 2 } } |
+        Sort-Object {
+            if ($_.name -match 'setup\.exe$') { 0 }
+            elseif ($_.name -match '\.exe$') { 1 }
+            else { 2 }
+        } |
         ForEach-Object { $_.browser_download_url }
     if ($apiAssets) { $downloadUrls += $apiAssets }
 } catch {
-    # Fallback to direct latest/download URLs above
+    # Fall through to pinned latest/download URLs below.
 }
 
 $downloadUrls += @(
+    "https://github.com/$repo/releases/latest/download/AbabilX_setup.exe",
+    "https://github.com/$repo/releases/latest/download/AbabilX.exe",
     "https://github.com/$repo/releases/latest/download/AbabilX.msi"
 )
 
