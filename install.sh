@@ -2,10 +2,12 @@
 set -e
 
 # ==============================================================================
-# AbabilX Desktop Universal Cross-Platform Installer
-# macOS (Apple Silicon / Intel) | Linux (x86_64 / arm64) | Windows (Bash / WSL)
+# Ababil Talk (AbabilX Desktop) cross-platform installer
+# macOS (Apple Silicon) | Linux (x86_64) | Windows (Git Bash / WSL)
 # Usage:
 #   curl -fsSL https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/install.sh | bash
+# Check which file it would install, without installing anything:
+#   curl -fsSL https://raw.githubusercontent.com/AbabilX/ababilxdesktop/main/install.sh | ABABILX_DRY_RUN=1 bash
 # ==============================================================================
 
 GREEN='\033[0;32m'
@@ -16,7 +18,7 @@ BOLD='\033[1m'
 NC='\033[0m'
 
 echo -e "\n${BOLD}${BLUE}╔═══════════════════════════════════════════════════════╗${NC}"
-echo -e "${BOLD}${BLUE}║             🚀  AbabilX Desktop Installer             ║${NC}"
+echo -e "${BOLD}${BLUE}║               🚀  Ababil Talk Installer               ║${NC}"
 echo -e "${BOLD}${BLUE}╚═══════════════════════════════════════════════════════╝${NC}\n"
 
 OS_NAME="$(uname -s)"
@@ -46,6 +48,11 @@ trap cleanup EXIT INT TERM
 download_pkg() {
   local url="$1" dest="$2"
   [ -z "$dest" ] && return 1
+  if [ "${ABABILX_DRY_RUN:-0}" = "1" ]; then
+    curl -fsIL "$url" -o /dev/null 2>/dev/null || return 1
+    echo -e "${GREEN}✔  Would install:${NC} $url"
+    exit 0
+  fi
   if command -v curl >/dev/null 2>&1; then
     curl -fSL "$url" -o "$dest" --progress-bar || return 1
   elif command -v wget >/dev/null 2>&1; then
@@ -57,7 +64,8 @@ download_pkg() {
   [ -s "$dest" ] || return 1
 }
 
-# Public installer repo Releases (Ababil.Talk_* / AbabilX_*.dmg assets).
+# Public installer repo Releases. Assets are version-stamped
+# (Ababil.Talk_0.2.1_aarch64.dmg), so the GitHub API is asked first.
 REPO="${ABABILX_REPO:-AbabilX/ababilxdesktop}"
 
 # Bundled installers under desktopapp/ are for offline installs only. They are
@@ -91,8 +99,13 @@ download_first() {
 
 install_macos() {
   echo -e "${BLUE}ℹ  Target Platform:${NC} macOS ($ARCH)"
+  # Only an Apple Silicon build is published; an Intel Mac cannot run it, so
+  # stop here instead of installing an app that will not open.
+  if [ "$ARCH" != "arm64" ]; then
+    echo -e "${RED}✘ Ababil Talk for macOS needs an Apple Silicon Mac (M1 or newer). Intel Macs are not supported yet.${NC}"
+    exit 1
+  fi
   local suffix="aarch64"
-  [ "$ARCH" = "x86_64" ] && suffix="x64"
 
   local local_dmg=""
   if use_local && [ -n "$SCRIPT_DIR" ] && [ -d "$SCRIPT_DIR/desktopapp" ]; then
@@ -101,16 +114,13 @@ install_macos() {
 
   local dmg_path="$local_dmg"
   if [ -z "$dmg_path" ] || [ ! -f "$dmg_path" ]; then
-    echo -e "${YELLOW}⬇  Downloading AbabilX for macOS ($ARCH)...${NC}"
+    echo -e "${YELLOW}⬇  Downloading Ababil Talk for macOS ($ARCH)...${NC}"
     TEMP_FILE="$(mktemp /tmp/AbabilX_XXXXXX.dmg)"
-    # Newest release first — a pinned v0.1 URL ahead of these would reinstall the
-    # old build forever and leave the app stuck on "update available".
+    # Newest release only. A pinned old URL here would reinstall the old build
+    # forever and leave the app stuck on "update available".
     download_first "$TEMP_FILE" \
-      "https://github.com/$REPO/releases/latest/download/AbabilX_${suffix}.dmg" \
-      "https://github.com/$REPO/releases/latest/download/AbabilX.dmg" \
-      "$(gh_latest_asset "${suffix}.*\\.dmg$")" \
-      "$(gh_latest_asset "\\.dmg$")" \
-      "https://github.com/$REPO/releases/download/v0.1/Macos_Relased.dmg" || {
+      "$(gh_latest_asset "${suffix}[^/]*\\.dmg$")" \
+      "https://github.com/$REPO/releases/latest/download/AbabilX_${suffix}.dmg" || {
         echo -e "${RED}✘ Download failed. Please check your internet connection.${NC}"; exit 1;
       }
     dmg_path="$TEMP_FILE"
@@ -122,7 +132,7 @@ install_macos() {
   MOUNT_DIR="$(mktemp -d /tmp/ababilx_mount_XXXXXX)"
   hdiutil attach "$dmg_path" -nobrowse -mountpoint "$MOUNT_DIR"
 
-  # The app is "Ababil Talk" since 0.3; older DMGs still carry AbabilX.app.
+  # The app is "Ababil Talk" since 0.2.1; older DMGs still carry AbabilX.app.
   local app_src="$(find "$MOUNT_DIR" -maxdepth 2 \( -name "Ababil Talk.app" -o -name "AbabilX.app" -o -name "ababilxdesktop.app" \) | head -n 1 || true)"
   [ -z "$app_src" ] && { echo -e "${RED}✘ App not found in DMG.${NC}"; exit 1; }
 
@@ -164,19 +174,21 @@ install_linux() {
     echo -e "${GREEN}✔  Using local installer:${NC} $local_app"
     cp -f "$local_app" "$target_bin"
   else
-    echo -e "${YELLOW}⬇  Downloading AbabilX AppImage...${NC}"
-    local deb_arch="amd64"
-    case "$ARCH" in aarch64|arm64) deb_arch="arm64" ;; esac
+    # Only an x86_64 build is published; an arm64 machine cannot run it.
+    case "$ARCH" in
+      x86_64|amd64) ;;
+      *) echo -e "${RED}✘ Ababil Talk for Linux needs an x86_64 (64-bit Intel/AMD) machine. $ARCH is not supported yet.${NC}"; exit 1 ;;
+    esac
+    echo -e "${YELLOW}⬇  Downloading Ababil Talk AppImage...${NC}"
     download_first "$target_bin" \
-      "$(gh_latest_asset "${deb_arch}.*\\.AppImage$")" \
-      "$(gh_latest_asset "\\.AppImage$")" \
-      "https://github.com/$REPO/releases/latest/download/AbabilX_${deb_arch}.AppImage" || {
-        echo -e "${RED}✘ Download failed. Please check your internet connection.${NC}"; exit 1;
+      "$(gh_latest_asset "amd64[^/]*\\.AppImage$")" \
+      "https://github.com/$REPO/releases/latest/download/AbabilX_amd64.AppImage" || {
+        echo -e "${RED}✘ Download failed. The latest release may not have a Linux build yet, or check your internet connection.${NC}"; exit 1;
       }
   fi
 
   chmod +x "$target_bin"
-  echo -e "\n${BOLD}${GREEN}✔  AbabilX installed to $target_bin${NC}"
+  echo -e "\n${BOLD}${GREEN}✔  Ababil Talk installed to $target_bin${NC}"
   echo -e "${BLUE}Tip: Ensure $bin_dir is in your PATH to run 'ababilx'.${NC}\n"
   [ -n "$DISPLAY" ] || [ -n "$WAYLAND_DISPLAY" ] && "$target_bin" &
 }
@@ -199,9 +211,8 @@ install_windows() {
 
     TEMP_FILE="$(mktemp "${tmp_base}/AbabilX_setup_${rand_id}_XXXXXX.exe" 2>/dev/null || echo "${tmp_base}/AbabilX_setup_${rand_id}.exe")"
     download_first "$TEMP_FILE" \
+      "$(gh_latest_asset "x64[^/]*setup\\.exe$")" \
       "$(gh_latest_asset "setup\\.exe$")" \
-      "$(gh_latest_asset "\\.exe$")" \
-      "$(gh_latest_asset "\\.msi$")" \
       "https://github.com/$REPO/releases/latest/download/AbabilX_setup.exe" \
       "https://github.com/$REPO/releases/latest/download/AbabilX.exe" || {
         echo -e "${RED}✘ Download failed. Please check your internet connection.${NC}"; exit 1;
@@ -227,7 +238,7 @@ install_windows() {
   else
     "$installer" &
   fi
-  echo -e "${GREEN}✔  AbabilX installation process completed!${NC}\n"
+  echo -e "${GREEN}✔  Ababil Talk installation process completed!${NC}\n"
 }
 
 case "$OS_NAME" in
